@@ -61,7 +61,7 @@ class PRS(object):
 
     def to_json(self):
         return {
-            '_watched_targets': [(ref.to_json(), deployable) for ref, deployable in self._watched_targets],
+            '_watched_targets': [(ref.to_json(), deployable) for ref, deployable in self._watched_targets.items()],
             'deploy_jobs': [
                 (target.to_json(), status.to_json())
                 for target, status in self.deploy_jobs.items()
@@ -76,7 +76,13 @@ class PRS(object):
         return [ref.repo for ref in self.watched_target_refs()]
 
     def watched_target_refs(self):
-        return [ref for ref, _ in self._watched_targets]
+        return self._watched_targets.keys()
+
+    def is_deployable_target_ref(self, ref):
+        return self._watched_targets.get(ref, False)
+
+    def is_watched_target_ref(self, ref):
+        return ref in self.watched_target_refs()
 
     def exists(self, source, target):
         assert isinstance(source, FQSHA), source
@@ -136,8 +142,8 @@ class PRS(object):
 
     def deploy(self, target):
         assert isinstance(target, FQSHA)
-        assert target.ref in self.watched_target_refs(), \
-            f'{target.ref} {[(ref.short_str(), deployable) for ref, deployable in self._watched_targets]}'
+        assert self.is_deployable_target_ref(target.ref), \
+            f'{target.ref} is non-deployable {[(ref.short_str(), deployable) for ref, deployable in self._watched_targets.items()]}'
         old_job = self.deploy_jobs.get(target, None)
         if old_job is not None:
             log.info(f'cancelling old deploy job {old_job.id} for {target}')
@@ -198,8 +204,11 @@ class PRS(object):
 
     def push(self, new_target):
         assert isinstance(new_target, FQSHA), new_target
-        if new_target.ref in self.watched_target_refs():
-            self.deploy(new_target)
+        if self.is_watched_target_ref(new_target.ref):
+            if self.is_deployable_target_ref(new_target.ref):
+                self.deploy(new_target)
+            else:
+                log.info(f'not deploying target {new_target.short_str()}')
         prs = self._get(target=new_target.ref).values()
         if len(prs) == 0:
             log.info(f'no PRs for target {new_target.short_str()}')

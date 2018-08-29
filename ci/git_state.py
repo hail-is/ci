@@ -1,4 +1,4 @@
-from constants import GITHUB_CLONE_URL
+from constants import GITHUB_CLONE_URL, SHA_LENGTH
 import json
 
 
@@ -114,7 +114,7 @@ class FQSHA(object):
                            pieces[1]),
                      pieces[2])
 
-    def short_str(self, sha_length=None):
+    def short_str(self, sha_length=SHA_LENGTH):
         if sha_length:
             return f'{self.ref.short_str()}:{self.sha[:sha_length]}'
         else:

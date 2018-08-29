@@ -49,8 +49,8 @@ def short_str_build_job(job):
     source = FQSHA.from_json(json.loads(attr['source']))
     return (
         f'[buildjob {job.id}]{state};'
-        f'{target.short_str(sha_length=SHA_LENGTH)}'
+        f'{target.short_str()}'
         f'..'
-        f'{source.short_str(sha_length=SHA_LENGTH)};'
+        f'{source.short_str()};'
         f'{attr["type"]};{attr["image"]};'
     )

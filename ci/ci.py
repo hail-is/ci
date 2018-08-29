@@ -24,7 +24,7 @@ import requests
 import threading
 import time
 
-prs = PRS(WATCHED_TARGETS)
+prs = PRS({k: v for [k, v] in WATCHED_TARGETS})
 
 app = Flask(__name__)
 
