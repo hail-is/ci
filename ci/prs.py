@@ -211,7 +211,7 @@ class PRS(object):
                 log.info(f'not deploying target {new_target.short_str()}')
         prs = self._get(target=new_target.ref).values()
         if len(prs) == 0:
-            log.info(f'no PRs for target {new_target.short_str()}')
+            log.info(f'no PRs for target {new_target.ref.short_str()}')
         else:
             for pr in prs:
                 self._set(pr.source.ref,

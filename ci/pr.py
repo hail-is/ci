@@ -253,11 +253,11 @@ class PR(object):
             assert not self.is_merged()
             if new_target and self.target != new_target:
                 log.info(
-                    f'new source and target sha {new_target} {new_source} {self.short_str()}'
+                    f'new source and target sha {new_target.short_str()} {new_source.short_str()} {self.short_str()}'
                 )
                 return self._new_target_and_source(new_target, new_source)
             else:
-                log.info(f'new source sha {new_source} {self.short_str()}')
+                log.info(f'new source sha {new_source.short_str()} {self.short_str()}')
                 return self._new_source(new_source)
         else:
             if new_target and self.target != new_target:
@@ -265,7 +265,7 @@ class PR(object):
                     log.info(f'ignoring new target sha for merged PR {self.short_str()}')
                     return self
                 else:
-                    log.info(f'new target sha {new_target} {self.short_str()}')
+                    log.info(f'new target sha {new_target.short_str()} {self.short_str()}')
                     return self._new_target(new_target)
             else:
                 return self
@@ -441,9 +441,6 @@ class PR(object):
 
     def refresh_from_batch_job(self, job):
         state = job.cached_status()['state']
-        log.info(
-            f'refreshing from ci job {short_str_build_job(job)} {self.short_str()}'
-        )
         if state == 'Complete':
             return self.update_from_completed_batch_job(job)
         elif state == 'Cancelled':
