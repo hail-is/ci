@@ -85,7 +85,7 @@ From another terminal with the anaconda environment also activated, the
 following runs the tests:
 
 ```
-pytest ci/test-ci2.py
+pytest test/test-ci.py
 ```
 
 
