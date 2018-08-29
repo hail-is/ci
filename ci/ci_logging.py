@@ -1,7 +1,8 @@
 import logging
 
 fmt = logging.Formatter(
-    '%(levelname)s:%(asctime)s:%(filename)s:%(funcName)s:%(lineno)d: '
+    # NB: no space after levename because WARNING is so long
+    '%(levelname)s\t| %(asctime)s \t| %(filename)s \t| %(funcName)s:%(lineno)d | '
     '%(message)s'
 )
 

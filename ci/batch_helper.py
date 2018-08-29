@@ -1,3 +1,4 @@
+from constants import SHA_LENGTH
 from ci_logging import log
 from git_state import FQSHA
 import requests
@@ -47,6 +48,9 @@ def short_str_build_job(job):
     target = FQSHA.from_json(json.loads(attr['target']))
     source = FQSHA.from_json(json.loads(attr['source']))
     return (
-        f'[buildjob {job.id}]{state};{target.short_str()}..{source.short_str()};'
+        f'[buildjob {job.id}]{state};'
+        f'{target.short_str(sha_length=SHA_LENGTH)}'
+        f'..'
+        f'{source.short_str(sha_length=SHA_LENGTH)};'
         f'{attr["type"]};{attr["image"]};'
     )

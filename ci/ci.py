@@ -19,6 +19,7 @@ from pr import review_status, GitHubPR
 from prs import PRS
 import collections
 import json
+import logging
 import requests
 import threading
 import time
@@ -340,6 +341,15 @@ def polling_event_loop():
         time.sleep(REFRESH_INTERVAL_IN_SECONDS)
 
 
+def fix_werkzeug_logs():
+    # https://github.com/pallets/flask/issues/1359#issuecomment-291749259
+    werkzeug_logger = logging.getLogger('werkzeug')
+    from werkzeug.serving import WSGIRequestHandler
+    WSGIRequestHandler.log = lambda self, type, message, *args: \
+        getattr(werkzeug_logger, type)('%s %s' % (self.address_string(), message % args))
+
+
 if __name__ == '__main__':
+    fix_werkzeug_logs()
     threading.Thread(target=polling_event_loop).start()
     app.run(host='0.0.0.0', threaded=False)
