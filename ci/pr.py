@@ -180,7 +180,7 @@ class GitHubPR(object):
         if tsha:
             tsha = tsha[:SHA_LENGTH]
         return (
-            f'[{self.number}]{self.target_ref.short_str()}:{tsha}..{self.source.short_str(sha_length=SHA_LENGTH)};'
+            f'[GHPR {self.number}]{self.target_ref.short_str()}:{tsha}..{self.source.short_str(sha_length=SHA_LENGTH)};'
             f'{self.state};'
         )
 
@@ -345,7 +345,7 @@ class PR(object):
 
     def short_str(self):
         return (
-            f'[{self.number}]{self.target.short_str(sha_length=SHA_LENGTH)}..{self.source.short_str(sha_length=SHA_LENGTH)};'
+            f'[PR {self.number}]{self.target.short_str(sha_length=SHA_LENGTH)}..{self.source.short_str(sha_length=SHA_LENGTH)};'
             f'{self.review};{self.build};'
         )
 
