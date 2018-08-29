@@ -43,8 +43,8 @@ def short_str_build_job(job):
     assert 'source' in attr, f'{attr} {job.id}'
     assert 'type' in attr, f'{attr} {job.id}'
     assert 'image' in attr, f'{attr} {job.id}'
-    target = FQSHA.from_json(attr['target'])
-    source = FQSHA.from_json(attr['source'])
+    target = FQSHA.from_json(json.loads(attr['target']))
+    source = FQSHA.from_json(json.loads(attr['source']))
     return (
         f'[buildjob {job.id}]{state};{target.short_str()}..{source.short_str()};'
         f'{attr["type"]};{attr["image"]};'
