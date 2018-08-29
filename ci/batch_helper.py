@@ -1,5 +1,6 @@
-import requests
 from ci_logging import log
+from git_state import FQSHA
+import requests
 
 
 def try_to_cancel_job(job):
@@ -33,3 +34,18 @@ def job_ordering(job1, job2):
         else:
             assert y == 'Cancelled', y
             return 1
+
+
+def short_str_build_job(job):
+    state = job.cached_status()['state']
+    attr = job.attributes
+    assert 'target' in attr, f'{attr} {job.id}'
+    assert 'source' in attr, f'{attr} {job.id}'
+    assert 'type' in attr, f'{attr} {job.id}'
+    assert 'image' in attr, f'{attr} {job.id}'
+    target = FQSHA.from_json(attr['target'])
+    source = FQSHA.from_json(attr['source'])
+    return (
+        f'[buildjob {job.id}]{state};{target.short_str()}..{source.short_str()};'
+        f'{attr["type"]};{attr["image"]};'
+    )

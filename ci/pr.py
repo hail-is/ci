@@ -1,4 +1,5 @@
 from batch.client import Job
+from batch_helper import short_str_build_job
 from build_state import \
     Failure, Mergeable, Unknown, NoImage, Building, Buildable, Merged, \
     build_state_from_json
@@ -311,7 +312,7 @@ class PR(object):
         return self._new_build(Merged(self.target.sha))
 
     def notify_github(self, build):
-        log.info(f'notifying github of {build} {self.short_str()}')
+        log.info(f'notifying github of {build} for {self.short_str()}')
         json = {
             'state': build.gh_state(),
             'description': str(build),
@@ -441,13 +442,13 @@ class PR(object):
     def refresh_from_batch_job(self, job):
         state = job.cached_status()['state']
         log.info(
-            f'refreshing from ci job {job.id} {state} {job.attributes} {self.short_str()}'
+            f'refreshing from ci job {short_str_build_job(job)} {self.short_str()}'
         )
         if state == 'Complete':
             return self.update_from_completed_batch_job(job)
         elif state == 'Cancelled':
             log.error(
-                f'a job for me was cancelled {job.id} {job.attributes} {self.short_str()}')
+                f'a job for me was cancelled {short_str_build_job(job)} {self.short_str()}')
             return self._new_build(try_new_build(self.source, self.target))
         else:
             assert state == 'Created', f'{state} {job.id} {job.attributes} {self.short_str()}'
@@ -482,10 +483,10 @@ class PR(object):
             )
             return self
         if exit_code == 0:
-            log.info(f'job finished success {job.id} {job.attributes} {self.short_str()}')
+            log.info(f'job finished success {short_str_build_job(job)} {self.short_str()}')
             return self._new_build(Mergeable(self.target.sha))
         else:
-            log.info(f'job finished failure {job.id} {job.attributes} {self.short_str()}')
+            log.info(f'job finished failure {short_str_build_job(job)} {self.short_str()}')
             return self._new_build(
                 Failure(exit_code,
                         job.attributes['image'],

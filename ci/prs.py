@@ -1,4 +1,5 @@
 from batch.client import Job
+from batch_helper import short_str_build_job
 from ci_logging import log
 from constants import VERSION, DEPLOY_JOB_TYPE
 from deploy_state import \
@@ -286,7 +287,7 @@ class PRS(object):
         pr = self._get(source.ref, target.ref)
         if pr is None:
             log.warning(
-                f'ignoring job {job.id} {job.attributes} for unknown {source.short_str()} '
+                f'ignoring job {short_str_build_job(job)} for unknown {source.short_str()} '
                 f'and {target.short_str()}'
             )
             return
