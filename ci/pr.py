@@ -8,7 +8,8 @@ from environment import PR_BUILD_SCRIPT, SELF_HOSTNAME, batch_client
 from git_state import FQSHA, FQRef
 from http_helper import get_repo, post_repo, BadStatus
 from sentinel import Sentinel
-from subprocess import run, CalledProcessError
+from shell_helper import shell
+import subprocess as sp
 import json
 import os
 
@@ -118,32 +119,26 @@ def maybe_get_image(source, target):
         if not os.path.isdir(trepo.qname):
             os.makedirs(trepo.qname, exist_ok=True)
             os.chdir(trepo.qname)
-            run(['git', 'clone', trepo.url, '.'], check=True)
+            shell('git', 'clone', trepo.url, '.')
         else:
             os.chdir(trepo.qname)
-        if run(['/bin/sh',
-                '-c',
-                f'git remote | grep -q {srepo.qname}']).returncode != 0:
-            run(['git', 'remote', 'add', srepo.qname, srepo.url], check=True)
-        run(['git', 'fetch', 'origin'], check=True)
-        run(['git', 'fetch', srepo.qname], check=True)
-        run(['git', 'checkout', target.sha], check=True)
-        run(['git',
-             'config',
-             'user.email',
-             'hail-ci-leader@example.com'],
-            check=True)
-        run(['git', 'config', 'user.name', 'hail-ci-leader'], check=True)
-        run(['git', 'merge', source.sha, '-m', 'foo'], check=True)
+        if sp.run(['/bin/sh', '-c', f'git remote | grep -q {srepo.qname}']).returncode != 0:
+            shell('git', 'remote', 'add', srepo.qname, srepo.url)
+        shell('git', 'fetch', 'origin')
+        shell('git', 'fetch', srepo.qname)
+        shell('git', 'checkout', target.sha)
+        shell('git', 'config', 'user.email', 'hail-ci-leader@example.com')
+        shell('git', 'config', 'user.name', 'hail-ci-leader')
+        shell('git', 'merge', source.sha, '-m', 'foo')
         # a force push that removes refs could fail us... not sure what we
         # should do in that case. maybe 500'ing is OK?
         with open('hail-ci-build-image', 'r') as f:
             return f.read().strip()
-    except (CalledProcessError, FileNotFoundError) as e:
+    except (sp.CalledProcessError, FileNotFoundError) as e:
         os.exception(f'could not get hail-ci-build-image due to {e}')
         return None
     finally:
-        run(['git', 'reset', '--merge'], check=True)
+        shell('git', 'reset', '--merge')
         os.chdir(d)
 
 
