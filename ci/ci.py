@@ -67,7 +67,7 @@ def github_pull_request():
         prs.pr_push(gh_pr)
     elif action == 'closed':
         gh_pr = GitHubPR.from_gh_json(d['pull_request'])
-        log.info(f'forgetting closed pr {gh_pr}')
+        log.info(f'forgetting closed pr {gh_pr.short_str()}')
         prs.forget(gh_pr.source.ref, gh_pr.target_ref)
     else:
         log.info(f'ignoring pull_request with action {action}')
@@ -235,7 +235,7 @@ def refresh_github_state():
             # refresh_statuses(pulls_by_target)
         except Exception as e:
             log.exception(
-                f'could not refresh state for {target_repo} due to {e}')
+                f'could not refresh state for {target_repo.short_str()} due to {e}')
     return '', 200
 
 

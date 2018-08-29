@@ -3,7 +3,7 @@ from build_state import \
     Failure, Mergeable, Unknown, NoImage, Building, Buildable, Merged, \
     build_state_from_json
 from ci_logging import log
-from constants import CONTEXT, BUILD_JOB_TYPE, VERSION, GCS_BUCKET
+from constants import CONTEXT, BUILD_JOB_TYPE, VERSION, GCS_BUCKET, SHA_LENGTH
 from environment import PR_BUILD_SCRIPT, SELF_HOSTNAME, batch_client
 from git_state import FQSHA, FQRef
 from http_helper import get_repo, post_repo, BadStatus
@@ -174,6 +174,15 @@ class GitHubPR(object):
     def __str__(self):
         return json.dumps(self.to_json())
 
+    def short_str(self):
+        tsha = self.target_sha
+        if tsha:
+            tsha = tsha[:SHA_LENGTH]
+        return (
+            f'[{self.number}]{self.target_ref}:{tsha}..{self.source.short_str(sha_length=SHA_LENGTH)};'
+            f'{self.state}'
+        )
+
     def to_json(self):
         return {
             'state': self.state,
@@ -243,19 +252,19 @@ class PR(object):
             assert not self.is_merged()
             if new_target and self.target != new_target:
                 log.info(
-                    f'new source and target sha {new_target} {new_source} {self}'
+                    f'new source and target sha {new_target} {new_source} {self.short_str()}'
                 )
                 return self._new_target_and_source(new_target, new_source)
             else:
-                log.info(f'new source sha {new_source} {self}')
+                log.info(f'new source sha {new_source} {self.short_str()}')
                 return self._new_source(new_source)
         else:
             if new_target and self.target != new_target:
                 if self.is_merged():
-                    log.info(f'ignoring new target sha for merged PR {self}')
+                    log.info(f'ignoring new target sha for merged PR {self.short_str()}')
                     return self
                 else:
-                    log.info(f'new target sha {new_target} {self}')
+                    log.info(f'new target sha {new_target} {self.short_str()}')
                     return self._new_target(new_target)
             else:
                 return self
@@ -302,7 +311,7 @@ class PR(object):
         return self._new_build(Merged(self.target.sha))
 
     def notify_github(self, build):
-        log.info(f'notifying github of {build} {self}')
+        log.info(f'notifying github of {build} {self.short_str()}')
         json = {
             'state': build.gh_state(),
             'description': str(build),
@@ -332,6 +341,12 @@ class PR(object):
 
     def __str__(self):
         return json.dumps(self.to_json())
+
+    def short_str(self):
+        return (
+            f'[{self.number}]{self.target.short_str(sha_length=SHA_LENGTH)}..{self.source.short_str(sha_length=SHA_LENGTH)};'
+            f'{self.review};{self.build}'
+        )
 
     @staticmethod
     def from_json(d):
@@ -378,7 +393,7 @@ class PR(object):
 
     def update_from_github_push(self, push):
         assert isinstance(push, FQSHA)
-        assert self.target.ref == push.ref, f'{push} {self}'
+        assert self.target.ref == push.ref, f'{push} {self.short_str()}'
         return self._maybe_new_shas(new_target=push)
 
     def update_from_github_pr(self, gh_pr):
@@ -393,16 +408,16 @@ class PR(object):
         else:
             result = self._maybe_new_shas(new_source=gh_pr.source)
         if self.title != gh_pr.title:
-            log.info(f'found new title from github {gh_pr.title} {self}')
+            log.info(f'found new title from github {gh_pr.title} {self.short_str()}')
             result = result.copy(title=gh_pr.title)
         if self.number != gh_pr.number:
-            log.info(f'found new PR number from github {gh_pr.title} {self}')
+            log.info(f'found new PR number from github {gh_pr.title} {self.short_str()}')
             result = result.copy(number=gh_pr.number)
         return result
 
     def update_from_github_review_state(self, review):
         if self.review != review:
-            log.info(f'review state changing from {self.review} to {review} {self}')
+            log.info(f'review state changing from {self.review} to {review} {self.short_str()}')
             # FIXME: start merge flow if approved and success
             return self.copy(review=review)
         else:
@@ -412,30 +427,30 @@ class PR(object):
         if isinstance(self.build, Unknown):
             if self.target.sha == build.target_sha:
                 log.info(
-                    f'recovering from unknown build state via github. {build} {self}'
+                    f'recovering from unknown build state via github. {build} {self.short_str()}'
                 )
                 return self.copy(build=build)
             else:
                 log.info('ignoring github build state for wrong target. '
-                         f'{build} {self}')
+                         f'{build} {self.short_str()}')
                 return self
         else:
-            log.info(f'ignoring github build state. {build} {self}')
+            log.info(f'ignoring github build state. {build} {self.short_str()}')
             return self
 
     def refresh_from_batch_job(self, job):
         state = job.cached_status()['state']
         log.info(
-            f'refreshing from ci job {job.id} {state} {job.attributes} {self}'
+            f'refreshing from ci job {job.id} {state} {job.attributes} {self.short_str()}'
         )
         if state == 'Complete':
             return self.update_from_completed_batch_job(job)
         elif state == 'Cancelled':
             log.error(
-                f'a job for me was cancelled {job.id} {job.attributes} {self}')
+                f'a job for me was cancelled {job.id} {job.attributes} {self.short_str()}')
             return self._new_build(try_new_build(self.source, self.target))
         else:
-            assert state == 'Created', f'{state} {job.id} {job.attributes} {self}'
+            assert state == 'Created', f'{state} {job.id} {job.attributes} {self.short_str()}'
             assert 'target' in job.attributes, job.attributes
             assert 'image' in job.attributes, job.attributes
             target = FQSHA.from_json(json.loads(job.attributes['target']))
@@ -457,20 +472,20 @@ class PR(object):
         if job_target.sha != self.target.sha:
             log.info(
                 f'notified of job for old target {job.id}'
-                # too noisy: f' {job.attributes} {self}'
+                # too noisy: f' {job.attributes} {self.short_str()}'
             )
             return self
         if job_source.sha != self.source.sha:
             log.info(
                 f'notified of job for old source {job.id}'
-                # too noisy: f' {job.attributes} {self}'
+                # too noisy: f' {job.attributes} {self.short_str()}'
             )
             return self
         if exit_code == 0:
-            log.info(f'job finished success {job.id} {job.attributes} {self}')
+            log.info(f'job finished success {job.id} {job.attributes} {self.short_str()}')
             return self._new_build(Mergeable(self.target.sha))
         else:
-            log.info(f'job finished failure {job.id} {job.attributes} {self}')
+            log.info(f'job finished failure {job.id} {job.attributes} {self.short_str()}')
             return self._new_build(
                 Failure(exit_code,
                         job.attributes['image'],

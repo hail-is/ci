@@ -201,7 +201,7 @@ class PRS(object):
             self.deploy(new_target)
         prs = self._get(target=new_target.ref).values()
         if len(prs) == 0:
-            log.info(f'no PRs for target {new_target}')
+            log.info(f'no PRs for target {new_target.short_str()}')
         else:
             for pr in prs:
                 self._set(pr.source.ref,
@@ -213,7 +213,7 @@ class PRS(object):
         assert isinstance(gh_pr, GitHubPR), gh_pr
         pr = self._get(gh_pr.source.ref, gh_pr.target_ref)
         if pr is None:
-            log.warning(f'found new PR {gh_pr}')
+            log.warning(f'found new PR {gh_pr.short_str()}')
             pr = gh_pr.to_PR(start_build=True)
         else:
             pr = pr.update_from_github_pr(gh_pr)
@@ -236,7 +236,7 @@ class PRS(object):
         assert state in ['pending', 'approved', 'changes_requested']
         pr = self._get(gh_pr.source.ref, gh_pr.target_ref)
         if pr is None:
-            log.warning(f'found new PR during review update {gh_pr}')
+            log.warning(f'found new PR during review update {gh_pr.short_str()}')
             pr = gh_pr.to_PR()
         self._set(gh_pr.source.ref,
                   gh_pr.target_ref,
@@ -253,7 +253,7 @@ class PRS(object):
         if not isinstance(deploy_status, Deploying):
             ValueError(
                 f'was in {deploy_status} but saw a completed deploy job '
-                f'{job.id} {job.attributes} for {target}')
+                f'{job.id} {job.attributes} for {target.short_str()}')
         assert job.cached_status()['state'] == 'Complete'
         exit_code = job.cached_status()['exit_code']
         if exit_code != 0:
@@ -286,8 +286,8 @@ class PRS(object):
         pr = self._get(source.ref, target.ref)
         if pr is None:
             log.warning(
-                f'ignoring job {job.id} {job.attributes} for unknown {source} '
-                f'and {target}'
+                f'ignoring job {job.id} {job.attributes} for unknown {source.short_str()} '
+                f'and {target.short_str()}'
             )
             return
         self._set(source.ref,
@@ -315,7 +315,7 @@ class PRS(object):
         pr = self._get(gh_pr.source.ref, gh_pr.target_ref)
         if pr is None:
             log.warning(
-                f'found new PR during GitHub build status update {gh_pr}')
+                f'found new PR during GitHub build status update {gh_pr.short_str()}')
             pr = gh_pr.to_PR()
         self._set(gh_pr.source.ref,
                   gh_pr.target_ref,
@@ -326,12 +326,12 @@ class PRS(object):
         assert isinstance(target, FQRef)
         pr = self._get(source, target)
         if pr is None:
-            raise ValueError(f'no such pr {source} {target}')
+            raise ValueError(f'no such pr {source.short_str()} {target.short_str()}')
         self._set(source, target, pr.build_it())
 
     def merge(self, pr):
         assert isinstance(pr, PR)
-        log.info(f'merging {pr}')
+        log.info(f'merging {pr.short_str()}')
         (gh_response, status_code) = put_repo(
              pr.target.ref.repo.qname,
              f'pulls/{pr.number}/merge',
@@ -341,12 +341,12 @@ class PRS(object):
              },
              status_code=[200, 409])
         if status_code == 200:
-            log.info(f'successful merge of {pr}')
+            log.info(f'successful merge of {pr.short_str()}')
             self._set(pr.source.ref, pr.target.ref, pr.merged())
         else:
             assert status_code == 409, f'{status_code} {gh_response}'
             log.warning(
-                f'failure to merge {pr} due to {status_code} {gh_response}, '
+                f'failure to merge {pr.short_str()} due to {status_code} {gh_response}, '
                 f'removing PR, github state refresh will recover and retest '
                 f'if necessary')
             self.forget(pr.source.ref, pr.target.ref)

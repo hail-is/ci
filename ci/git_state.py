@@ -114,8 +114,11 @@ class FQSHA(object):
                            pieces[1]),
                      pieces[2])
 
-    def short_str(self):
-        return f'{self.ref.short_str()}:{self.sha}'
+    def short_str(self, sha_length=None):
+        if sha_length:
+            return f'{self.ref.short_str()}:{self.sha[:sha_length]}'
+        else:
+            return f'{self.ref.short_str()}:{self.sha}'
 
     @staticmethod
     def from_gh_json(d):
