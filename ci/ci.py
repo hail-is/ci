@@ -9,7 +9,7 @@ from environment import \
     REFRESH_INTERVAL_IN_SECONDS
 from flask import Flask, request, jsonify
 from git_state import Repo, FQRef, FQSHA
-from github import open_pulls, overall_review_state
+from github import open_pulls, overall_review_state, latest_sha_for_ref
 from google_storage import \
     upload_public_gs_file_from_filename, \
     upload_public_gs_file_from_string
@@ -227,8 +227,13 @@ def refresh_github_state():
         try:
             pulls = open_pulls(target_repo)
             pulls_by_target = collections.defaultdict(list)
+            latest_target_shas = {}
             for pull in pulls:
                 gh_pr = GitHubPR.from_gh_json(pull)
+                if gh_pr.target_ref not in latest_target_shas:
+                    latest_target_shas[gh_pr.target_ref] = latest_sha_for_ref(gh_pr.target_ref)
+                sha = latest_target_shas[gh_pr.target_ref]
+                gh_pr.target_sha = sha
                 pulls_by_target[gh_pr.target_ref].append(gh_pr)
             refresh_pulls(target_repo, pulls_by_target)
             refresh_reviews(pulls_by_target)
