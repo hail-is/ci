@@ -1,6 +1,7 @@
 from ci_logging import log
 from git_state import FQSHA
 import requests
+import json
 
 
 def try_to_cancel_job(job):
