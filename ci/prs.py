@@ -238,7 +238,7 @@ class PRS(object):
         pr = self._get(gh_pr.source.ref, gh_pr.target_ref)
         if pr is None:
             log.warning(f'found new PR during review update {gh_pr.short_str()}')
-            pr = gh_pr.to_PR()
+            pr = gh_pr.to_PR(start_build=True)
         self._set(gh_pr.source.ref,
                   gh_pr.target_ref,
                   pr.update_from_github_review_state(state))
