@@ -305,6 +305,7 @@ def set_deployable():
     action = d['action']
     assert action in ('unwatch', 'watch', 'deploy')
     prs.update_watch_state(target_ref, action)
+    return '', 200
 
 
 ###############################################################################
