@@ -86,7 +86,10 @@ class Mergeable(object):
         self.target_sha = target_sha
 
     def transition(self, other):
-        if not isinstance(other, Merged):
+        if not (isinstance(other, Merged) or
+                isinstance(other, Building) or
+                isinstance(other, Buildable) or
+                isinstance(other, NoImage)):
             log.warning(
                 f'usually Mergeable should go to Merged, but going to {other}'
             )
@@ -272,9 +275,9 @@ class NoImage(object):
         self.target_sha = target_sha
 
     def transition(self, other):
-        if (not isinstance(other, Buildable) and
-            not isinstance(other, Building) and
-            not (isinstance(other, NoImage) and self != other)):
+        if not (isinstance(other, Buildable) or
+                isinstance(other, Building) or
+                (isinstance(other, NoImage) and self != other)):
             raise ValueError(f'bad transition {self} to {other}')
         return other
 
