@@ -63,6 +63,7 @@ class PRS(object):
     def to_json(self):
         return {
             '_watched_targets': [(ref.to_json(), deployable) for ref, deployable in self._watched_targets.items()],
+            'latest_deployed': [(ref.to_json(), latest_sha) for ref, latest_sha in self.latest_deployed.items()],
             'deploy_jobs': [
                 (target.to_json(), job.id)
                 for target, job in self.deploy_jobs.items()
