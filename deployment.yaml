@@ -60,4 +60,5 @@ spec:
       targetPort: 5000
   selector:
     app: hail-ci
+  loadBalancerIP: 130.211.39.254 # hail-ci-0-1
   type: LoadBalancer

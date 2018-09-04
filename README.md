@@ -304,3 +304,12 @@ Example usage:
 kubectl logs -f $(hailcipod) # nb: logs -f doesn't work with -l
 kubectl logs $(jobpod 542)
 ```
+
+Static IP for Hail CI Service
+---
+
+```
+gcloud compute addresses create hail-ci-0-1 \
+    --global \
+    --ip-version IPV4
+```
