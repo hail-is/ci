@@ -472,7 +472,7 @@ class TestCIAgainstGitHub(unittest.TestCase):
                 call(['git', 'push', 'origin', ':' + BRANCH_NAME])
                 for pr_number in pr_number.values():
                     patch_repo(
-                        'hail-is/ci-test',
+                        self.fq_repo,
                         f'pulls/{pr_number}',
                         json={"state": "closed"},
                         status_code=200,
@@ -487,12 +487,12 @@ class TestCIAgainstGitHub(unittest.TestCase):
                 self.assertIn('_watched_targets', status)
                 assert status['_watched_targets'] == [[{
                     'repo': {
-                        'name': 'ci-test',
+                        'name': self.repo_name,
                         'owner': 'hail-is'},
                     'name': 'master'}, True]]
                 os.chdir(d)
-                call(['git', 'clone', 'git@github.com:hail-is/ci-test.git'])
-                os.chdir('ci-test')
+                call(['git', 'clone', 'git@github.com:hail-is/{self.repo_name}.git'])
+                os.chdir(self.repo_name)
                 call(['git', 'remote', '-v'])
 
                 call(['git', 'checkout', '-b', BRANCH_NAME])
@@ -500,7 +500,7 @@ class TestCIAgainstGitHub(unittest.TestCase):
                 call(['git', 'push', 'origin', BRANCH_NAME])
                 source_sha = self.rev_parse(BRANCH_NAME)
                 gh_pr = post_repo(
-                    'hail-is/ci-test',
+                    self.fq_repo,
                     'pulls',
                     json={
                         "title": "foo",
@@ -510,7 +510,7 @@ class TestCIAgainstGitHub(unittest.TestCase):
                     status_code=201)
                 pr_number = str(gh_pr['number'])
                 post_repo(
-                    'hail-is/ci-test',
+                    self.fq_repo,
                     f'pulls/{pr_number}/reviews',
                     json={
                         "commit_id": source_sha,
@@ -519,7 +519,7 @@ class TestCIAgainstGitHub(unittest.TestCase):
                     status_code=200,
                     token=oauth_tokens['user2'])
                 get_repo(
-                    'hail-is/ci-test',
+                    self.fq_repo,
                     f'pulls/{pr_number}/reviews',
                     status_code=200,
                     token=oauth_tokens['user1'])
@@ -539,7 +539,7 @@ class TestCIAgainstGitHub(unittest.TestCase):
                 call(['git', 'push', 'origin', ':' + BRANCH_NAME])
                 if pr_number is not None:
                     patch_repo(
-                        'hail-is/ci-test',
+                        self.fq_repo,
                         f'pulls/{pr_number}',
                         json={"state": "closed"},
                         status_code=200)
