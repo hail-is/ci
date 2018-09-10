@@ -3,14 +3,14 @@ set -ex
 
 REPO_NAME=ci-test-$(LC_CTYPE=C LC_ALL=C tr -dc 'a-z0-9' < /dev/urandom | head -c 8)
 
-function cleanup {
+cleanup() {
     set "" INT TERM
     set +e
     kill $(cat ci.pid)
     rm -rf ci.pid
     curl -XDELETE \
          https://api.github.com/orgs/hail-is/${REPO_NAME} \
-         -H "Authorization: token $(cat github-tokens/user1)" \
+         -H "Authorization: token $(cat github-tokens/user1)"
 }
 trap cleanup EXIT
 
