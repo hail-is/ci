@@ -29,7 +29,7 @@ class BadStatus(Exception):
 def read_oauth_token_or_fail(path):
     try:
         with open(path, 'r') as f:
-            return f.read()
+            return f.read().strip()
     except FileNotFoundError as e:
         raise NoOAuthToken(f"working directory must contain `{path}' "
                            "containing a valid GitHub oauth token") from e
@@ -122,7 +122,7 @@ class TestCILocally(unittest.TestCase):
 
 class TestCIAgainstGitHub(unittest.TestCase):
     repo_name = os.environ['REPO_NAME']
-    fq_repo = 'hail-is/' + os.environ['REPO_NAME']
+    fq_repo = 'hail-ci-test/' + os.environ['REPO_NAME']
 
     def get_pr(self, source_ref):
         status = ci_get('/status', status_code=200)
@@ -234,10 +234,10 @@ class TestCIAgainstGitHub(unittest.TestCase):
                 self.assertEqual(status['_watched_targets'],
                                  [[{'repo': {
                                      'name': self.repo_name,
-                                     'owner': 'hail-is'},
+                                     'owner': 'hail-ci-test'},
                                     'name': 'master'}, True]])
                 os.chdir(d)
-                call(['git', 'clone', f'git@github.com:hail-is/{self.repo_name}.git'])
+                call(['git', 'clone', f'git@github.com:hail-ci-test/{self.repo_name}.git'])
                 os.chdir(self.repo_name)
                 call(['git', 'remote', '-v'])
 
@@ -265,7 +265,7 @@ class TestCIAgainstGitHub(unittest.TestCase):
                         "target": {
                             "ref": {
                                 "repo": {
-                                    "owner": "hail-is",
+                                    "owner": "hail-ci-test",
                                     "name": self.repo_name
                                 },
                                 "name": "master"
@@ -275,7 +275,7 @@ class TestCIAgainstGitHub(unittest.TestCase):
                         "source": {
                             "ref": {
                                 "repo": {
-                                    "owner": "hail-is",
+                                    "owner": "hail-ci-test",
                                     "name": self.repo_name
                                 },
                                 "name": BRANCH_NAME
@@ -355,10 +355,10 @@ class TestCIAgainstGitHub(unittest.TestCase):
                 assert status['_watched_targets'] == [[{
                     'repo': {
                         'name': self.repo_name,
-                        'owner': 'hail-is'},
+                        'owner': 'hail-ci-test'},
                     'name': 'master'}, True]]
                 os.chdir(d)
-                call(['git', 'clone', f'git@github.com:hail-is/{self.repo_name}.git'])
+                call(['git', 'clone', f'git@github.com:hail-ci-test/{self.repo_name}.git'])
                 os.chdir(self.repo_name)
                 call(['git', 'remote', '-v'])
 
@@ -386,7 +386,7 @@ class TestCIAgainstGitHub(unittest.TestCase):
                         "target": {
                             "ref": {
                                 "repo": {
-                                    "owner": "hail-is",
+                                    "owner": "hail-ci-test",
                                     "name": self.repo_name
                                 },
                                 "name": "master"
@@ -396,7 +396,7 @@ class TestCIAgainstGitHub(unittest.TestCase):
                         "source": {
                             "ref": {
                                 "repo": {
-                                    "owner": "hail-is",
+                                    "owner": "hail-ci-test",
                                     "name": self.repo_name
                                 },
                                 "name": SLOW_BRANCH_NAME
@@ -443,7 +443,7 @@ class TestCIAgainstGitHub(unittest.TestCase):
                         "target": {
                             "ref": {
                                 "repo": {
-                                    "owner": "hail-is",
+                                    "owner": "hail-ci-test",
                                     "name": self.repo_name
                                 },
                                 "name": "master"
@@ -453,7 +453,7 @@ class TestCIAgainstGitHub(unittest.TestCase):
                         "source": {
                             "ref": {
                                 "repo": {
-                                    "owner": "hail-is",
+                                    "owner": "hail-ci-test",
                                     "name": self.repo_name
                                 },
                                 "name": SLOW_BRANCH_NAME
@@ -488,10 +488,10 @@ class TestCIAgainstGitHub(unittest.TestCase):
                 assert status['_watched_targets'] == [[{
                     'repo': {
                         'name': self.repo_name,
-                        'owner': 'hail-is'},
+                        'owner': 'hail-ci-test'},
                     'name': 'master'}, True]]
                 os.chdir(d)
-                call(['git', 'clone', 'git@github.com:hail-is/{self.repo_name}.git'])
+                call(['git', 'clone', f'git@github.com:hail-ci-test/{self.repo_name}.git'])
                 os.chdir(self.repo_name)
                 call(['git', 'remote', '-v'])
 
