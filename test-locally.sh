@@ -33,7 +33,7 @@ set -x
 REPO_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'mytmpdir')
 cp test-repo/* ${REPO_DIR}
 pushd ${REPO_DIR}
-# set +x
+set +x
 git init
 git remote add origin \
     https://${TOKEN}@github.com/hail-ci-test/${REPO_NAME}.git
