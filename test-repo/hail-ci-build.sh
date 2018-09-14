@@ -1,4 +1,3 @@
-echo hi dan
 uname -a
 mkdir -p artifacts/foo/bar
 cat <<EOF > artifacts/index.html
