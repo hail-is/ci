@@ -29,14 +29,18 @@ curl -XPOST \
      -d "{ \"name\" : \"${REPO_NAME}\" }"
 set -x
 
-rm -rf /tmp/foo
-git clone https://github.com/hail-is/ci-test.git /tmp/foo
-pushd /tmp/foo
-set +x
-git remote add new-origin \
+# https://unix.stackexchange.com/questions/30091/fix-or-alternative-for-mktemp-in-os-x
+REPO_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'mytmpdir')
+cp test-repo/* ${REPO_DIR}
+pushd ${REPO_DIR}
+# set +x
+git init
+git remote add origin \
     https://${TOKEN}@github.com/hail-ci-test/${REPO_NAME}.git
+git add *
+git commit -m 'inital commit'
 set -x
-git push new-origin master:master
+git push origin master:master
 popd
 
 set +x
