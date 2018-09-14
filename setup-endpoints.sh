@@ -7,7 +7,7 @@ CALLBACK_URL=$3
 if [[ -z "${FULLY_QUALIFIED_REPO_NAME}" ]] || [[ -z "${TOKEN}" ]] || [[ -z "${CALLBACK_URL}" ]]
 then
     echo "USAGE: ./setup-endpoints.sh FULLY_QUALIFIED_REPO_NAME GITHUB_OAUTH_TOKEN CALLBACK_URL"
-    echo "    e.g.: ./setup-endpoints.sh hail-ci-test/foo abcdef https://ci2.hail.is"
+    echo "    e.g.: ./setup-endpoints.sh hail-ci-test/foo abcdef http://ci2.hail.is"
     exit 1
 fi
 
