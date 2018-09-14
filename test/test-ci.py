@@ -134,7 +134,7 @@ class TestCIAgainstGitHub(unittest.TestCase):
         return prs[0]
 
     DELAY_IN_SECONDS = 5
-    MAX_POLLS = 10
+    MAX_POLLS = 20
 
     def poll_github_until_merged(self,
                                  pr_number,
