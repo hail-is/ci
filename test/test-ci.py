@@ -101,6 +101,26 @@ def dictKVMismatches(actual, kvs):
     return errors
 
 
+i = 0
+
+class FML(object):
+    def __init__(self, f):
+        self.f = f
+
+    def __enter__(self):
+        return self.f
+
+    def __exit__(self, a, b, c):
+        return
+
+def tempdir():
+    global i
+    path = f'/tmp/fooo{i}'
+    i = i + 1
+    os.mkdir(path)
+    return FML(path)
+
+
 ###############################################################################
 
 
@@ -226,7 +246,8 @@ class TestCIAgainstGitHub(unittest.TestCase):
 
     def test_pull_request_trigger(self):
         BRANCH_NAME = 'test_pull_request_trigger'
-        with tempfile.TemporaryDirectory() as d:
+        # with tempfile.TemporaryDirectory() as d:
+        with tempdir() as d:
             pr_number = None
             try:
                 status = ci_get('/status', status_code=200)
@@ -237,8 +258,10 @@ class TestCIAgainstGitHub(unittest.TestCase):
                                      'owner': 'hail-ci-test'},
                                     'name': 'master'}, True]])
                 os.chdir(d)
-                call(['git', 'clone', f'git@github.com:hail-ci-test/{self.repo_name}.git'])
+                call(['git', 'clone', f'https://{oauth_tokens["user1"]}@github.com/hail-ci-test/{self.repo_name}.git'])
                 os.chdir(self.repo_name)
+                call(['git', 'config', 'user.email', 'ci-automated-tests@broadinstitute.org'])
+                call(['git', 'config', 'user.name', 'ci-automated-tests'])
                 call(['git', 'remote', '-v'])
 
                 call(['git', 'checkout', '-b', BRANCH_NAME])
@@ -344,7 +367,8 @@ class TestCIAgainstGitHub(unittest.TestCase):
     def test_push_while_building(self):
         BRANCH_NAME = 'test_push_while_building'
         SLOW_BRANCH_NAME = 'test_push_while_building_slow'
-        with tempfile.TemporaryDirectory() as d:
+        # with tempfile.TemporaryDirectory() as d:g
+        with tempdir() as d:
             pr_number = {}
             source_sha = {}
             gh_pr = {}
@@ -358,8 +382,11 @@ class TestCIAgainstGitHub(unittest.TestCase):
                         'owner': 'hail-ci-test'},
                     'name': 'master'}, True]]
                 os.chdir(d)
-                call(['git', 'clone', f'git@github.com:hail-ci-test/{self.repo_name}.git'])
+
+                call(['git', 'clone', f'https://{oauth_tokens["user1"]}@github.com/hail-ci-test/{self.repo_name}.git'])
                 os.chdir(self.repo_name)
+                call(['git', 'config', 'user.email', 'ci-automated-tests@broadinstitute.org'])
+                call(['git', 'config', 'user.name', 'ci-automated-tests'])
                 call(['git', 'remote', '-v'])
 
                 # start slow branch
@@ -480,7 +507,8 @@ class TestCIAgainstGitHub(unittest.TestCase):
 
     def test_merges_approved_pr(self):
         BRANCH_NAME = 'test_merges_approved_pr'
-        with tempfile.TemporaryDirectory() as d:
+        # with tempfile.TemporaryDirectory() as d:
+        with tempdir() as d:
             pr_number = None
             try:
                 status = ci_get('/status', status_code=200)
@@ -491,8 +519,10 @@ class TestCIAgainstGitHub(unittest.TestCase):
                         'owner': 'hail-ci-test'},
                     'name': 'master'}, True]]
                 os.chdir(d)
-                call(['git', 'clone', f'git@github.com:hail-ci-test/{self.repo_name}.git'])
+                call(['git', 'clone', f'https://{oauth_tokens["user1"]}@github.com/hail-ci-test/{self.repo_name}.git'])
                 os.chdir(self.repo_name)
+                call(['git', 'config', 'user.email', 'ci-automated-tests@broadinstitute.org'])
+                call(['git', 'config', 'user.name', 'ci-automated-tests'])
                 call(['git', 'remote', '-v'])
 
                 call(['git', 'checkout', '-b', BRANCH_NAME])

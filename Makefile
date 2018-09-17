@@ -71,3 +71,6 @@ test-locally: restart-all-proxies
 	SELF_HOSTNAME=http://35.232.159.176:${HAIL_CI_REMOTE_PORT} \
 	BATCH_SERVER_URL=http://127.0.0.1:${HAIL_CI_LOCAL_BATCH_PORT} \
 	source activate hail-ci && ./test-locally.sh
+
+test-in-cluster:
+	. activate hail-ci && ./test-in-cluster.sh

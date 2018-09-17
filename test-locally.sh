@@ -31,11 +31,6 @@ curl -XPOST \
      -d "{ \"name\" : \"${REPO_NAME}\" }"
 set -x
 
-# start CI system
-source activate hail-ci
-python ci/ci.py & echo $! > ci.pid
-sleep 10
-
 # upload files to temp repo
 # https://unix.stackexchange.com/questions/30091/fix-or-alternative-for-mktemp-in-os-x
 REPO_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'mytmpdir')
@@ -53,10 +48,14 @@ git commit -m 'inital commit'
 git push origin master:master
 popd
 
+# start CI system
+source activate hail-ci
+python ci/ci.py & echo $! > ci.pid
+sleep 10
+
 # setup webhooks for temp repo
 set +x
 ./setup-endpoints.sh hail-ci-test/${REPO_NAME} ${TOKEN} ${SELF_HOSTNAME}
 set -x
 
-export PYTHONPATH=$PYTHONPATH:${PWD}/ci
-pytest -vv test/test-ci.py
+PYTHONPATH=$PYTHONPATH:${PWD}/ci pytest -vv test/test-ci.py
