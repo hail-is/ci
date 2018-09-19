@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e
+set +x
+
 FULLY_QUALIFIED_REPO_NAME=$1
 TOKEN=$2
 CALLBACK_URL=$3
@@ -11,11 +14,9 @@ then
     exit 1
 fi
 
-set -e
-
 for ENDPOINT in push pull_request pull_request_review
 do
-    set +x # hide the token from logs
+    echo "creating endpoint ${ENDPOINT}"
     curl -XPOST \
          https://api.github.com/repos/${FULLY_QUALIFIED_REPO_NAME}/hooks \
          -H "Authorization: token ${TOKEN}" \
@@ -26,5 +27,5 @@ do
                }
              , "events": ["'${ENDPOINT}'"]
              }'
-    set -x
 done
+
