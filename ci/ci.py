@@ -257,7 +257,6 @@ def refresh_github_state():
 
 
 def refresh_pulls(target_repo, pulls_by_target):
-    log.info(f'refreshing pulls for targets {[x.short_str() for x in pulls_by_target.keys()]}')
     dead_targets = (
         set(prs.live_target_refs_for_repo(target_repo)) -
         {x for x in pulls_by_target.keys()}
@@ -276,9 +275,7 @@ def refresh_pulls(target_repo, pulls_by_target):
 
 
 def refresh_reviews(pulls_by_target):
-    log.info(f'refreshing reviews for targets {[x.short_str() for x in pulls_by_target.keys()]}')
     for (_, pulls) in pulls_by_target.items():
-        log.info(f'refreshing reviews for pulls {[p.short_str() for p in pulls]}')
         for gh_pr in pulls:
             reviews = get_repo(
                 gh_pr.target_ref.repo.qname,

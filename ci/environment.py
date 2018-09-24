@@ -55,6 +55,4 @@ log.info(f'WATCHED_TARGETS {[(ref.short_str(), deployable) for (ref, deployable)
 log.info(f'INSTANCE_ID = {INSTANCE_ID}')
 log.info(f'CONTEXT = {CONTEXT}')
 
-log.info(f'creating batch client at {BATCH_SERVER_URL}')
 batch_client = BatchClient(url=BATCH_SERVER_URL)
-log.info(f'created batch client at {BATCH_SERVER_URL}')
