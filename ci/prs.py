@@ -159,9 +159,10 @@ class PRS(object):
             self._set(pr.source.ref, pr.target.ref, pr.build_it())
 
     _deploy_secrets = {
-        Repo('hail-is', 'hail'): f'ci-deploy-{VERSION}--hail-is-hail-service-account-key',
-        Repo('Nealelab', 'cloudtools'): f'ci-deploy-{VERSION}--nealelab-cloudtools',
-        Repo('hail-is', 'batch'): 'gcr-push-service-account-key'
+        Repo('hail-is', 'hail'): [f'ci-deploy-{VERSION}--hail-is-hail-service-account-key',
+                                  'gcr-push-service-account-key'],
+        Repo('Nealelab', 'cloudtools'): [f'ci-deploy-{VERSION}--nealelab-cloudtools'],
+        Repo('hail-is', 'batch'): ['gcr-push-service-account-key']
     }
 
     def try_deploy(self, target_ref):
@@ -203,10 +204,10 @@ class PRS(object):
             }]
             if target_ref.repo.owner == "hail-ci-test":
                 # special case for test repos
-                deploy_secret = f'ci-deploy-{VERSION}--hail-is-ci-test-service-account-key'
+                deploy_secrets = [f'ci-deploy-{VERSION}--hail-is-ci-test-service-account-key']
             else:
-                deploy_secret = PRS._deploy_secrets.get(target_ref.repo, None)
-            if deploy_secret:
+                deploy_secrets = PRS._deploy_secrets.get(target_ref.repo, [])
+            for deploy_secret in deploy_secrets:
                 volumes.append({
                     'volume': {
                         'name': f'{deploy_secret}',
