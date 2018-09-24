@@ -1,5 +1,6 @@
 .PHONY: run hail-ci-image restart-proxy restart-batch-proxy restart-all-proxies
 .PHONY: setup-conda-env push-hail-ci-image test-locally
+.PHONY: hail-ci-build-image push-hail-ci-build-image
 
 HAIL_CI_LOCAL_BATCH_PORT ?= 8888
 
