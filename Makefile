@@ -73,4 +73,4 @@ test-locally: restart-all-proxies
 	source activate hail-ci && ./test-locally.sh
 
 test-in-cluster:
-   . activate hail-ci && ./test-in-cluster.sh
+	. activate hail-ci && ./test-in-cluster.sh
