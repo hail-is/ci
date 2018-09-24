@@ -1,4 +1,5 @@
 from http_helper import get_repo, post_repo, patch_repo
+from environment import INSTANCE_ID
 from pr import PR
 from subprocess import call, run
 import inspect
@@ -101,9 +102,7 @@ def dictKVMismatches(actual, kvs):
     return errors
 
 
-i = 0
-
-class FML(object):
+class NoCleanUpTemporaryDirectory(object):
     def __init__(self, f):
         self.f = f
 
@@ -113,12 +112,20 @@ class FML(object):
     def __exit__(self, a, b, c):
         return
 
+i = 0
+
 def tempdir():
-    global i
-    path = f'/tmp/fooo{i}'
-    i = i + 1
-    os.mkdir(path)
-    return FML(path)
+    in_cluster = os.get["IN_CLUSTER"]
+    if in_cluster and in_cluster == "true":
+        # for some reason, pytest does not work in a k8s pod using a temporary
+        # directory that is deleted when the test finishes
+        global i
+        path = f'/tmp/hail-ci-{INSTANCE_ID}-{i}'
+        i = i + 1
+        os.mkdir(path)
+        return NoCleanUpTemporaryDirectory(path)
+    else:
+        return tempfile.TemporaryDirectory()
 
 
 ###############################################################################
@@ -246,7 +253,6 @@ class TestCIAgainstGitHub(unittest.TestCase):
 
     def test_pull_request_trigger(self):
         BRANCH_NAME = 'test_pull_request_trigger'
-        # with tempfile.TemporaryDirectory() as d:
         with tempdir() as d:
             pr_number = None
             try:
@@ -367,7 +373,6 @@ class TestCIAgainstGitHub(unittest.TestCase):
     def test_push_while_building(self):
         BRANCH_NAME = 'test_push_while_building'
         SLOW_BRANCH_NAME = 'test_push_while_building_slow'
-        # with tempfile.TemporaryDirectory() as d:g
         with tempdir() as d:
             pr_number = {}
             source_sha = {}
@@ -507,7 +512,6 @@ class TestCIAgainstGitHub(unittest.TestCase):
 
     def test_merges_approved_pr(self):
         BRANCH_NAME = 'test_merges_approved_pr'
-        # with tempfile.TemporaryDirectory() as d:
         with tempdir() as d:
             pr_number = None
             try:

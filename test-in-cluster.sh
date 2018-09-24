@@ -32,6 +32,7 @@ cp /secrets/oauth-token oauth-token
 mkdir gcloud-token
 cp /secrets/hail-ci-0-1.key gcloud-token
 
+export IN_CLUSTER=true
 export SELF_HOSTNAME=http://${PUBLIC_IP}
 export BATCH_SERVER_URL=http://batch
 source activate hail-ci && ./test-locally.sh
