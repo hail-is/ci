@@ -1,6 +1,5 @@
 .PHONY: run hail-ci-image restart-proxy restart-batch-proxy restart-all-proxies
 .PHONY: setup-conda-env push-hail-ci-image test-locally
-.PHONY: hail-ci-build-image push-hail-ci-build-image
 
 HAIL_CI_LOCAL_BATCH_PORT ?= 8888
 
@@ -24,17 +23,6 @@ push-hail-ci-image: hail-ci-image
 	docker tag hail-ci:${HASH} gcr.io/broad-ctsa/hail-ci:${HASH}
 	docker push gcr.io/broad-ctsa/hail-ci:${HASH}
 	echo built gcr.io/broad-ctsa/${HAIL_CI_IMAGE_SHORT_NAME}:${HASH}
-
-hail-ci-build-image:
-	-docker pull continuumio/miniconda:latest
-	-docker pull $(shell cat hail-ci-build-image)
-	docker build . -t hail-ci-pr-builder -f Dockerfile.pr-builder \
-	    --cache-from $(shell cat hail-ci-build-image),hail-ci-pr-builder,continuumio/miniconda:latest
-
-push-hail-ci-build-image: hail-ci-build-image
-	echo "gcr.io/broad-ctsa/hail-ci-pr-builder:`docker images -q --no-trunc hail-ci-pr-builder:latest | sed -e 's,[^:]*:,,'`" > hail-ci-build-image
-	docker tag hail-ci-pr-builder `cat hail-ci-build-image`
-	docker push `cat hail-ci-build-image`
 
 restart-all-proxies: restart-proxy restart-batch-proxy
 
@@ -85,4 +73,4 @@ test-locally: restart-all-proxies
 	source activate hail-ci && ./test-locally.sh
 
 test-in-cluster:
-	. activate hail-ci && ./test-in-cluster.sh
+   . activate hail-ci && ./test-in-cluster.sh
